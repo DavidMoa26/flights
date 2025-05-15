@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 4006;
 app.use(json());
 initDb()
   .then(() => {
-    console.log('Database connected successfully');
+    console.log('Database connected successfully!!!');
   })
   .catch((err) => {
     console.error('Database connection failed:', err.message);
