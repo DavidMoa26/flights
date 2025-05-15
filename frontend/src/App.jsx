@@ -4,9 +4,12 @@ import './App.css';
 import axios from 'axios';
 
 function App() {
+  const baseUrl = import.meta.env.VITE_SERVICE_URL;
+  console.log(baseUrl);
+
   const onSubmit = async () => {
     const response = await axios.post(
-      'http://localhost:4000/create-flight',
+      `${import.meta.env.VITE_SERVICE_URL}/create-flight`,
       {}
     );
     console.log(response.data);
