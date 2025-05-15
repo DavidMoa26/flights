@@ -15,7 +15,7 @@ export async function startTestServer() {
     await initDb();
     return new Promise((resolve, reject) => {
       server = app.listen(port, () => {
-        console.log(`Products service running on port ${port}`);
+        console.log(`service running on port ${port}`);
         resolve(server);
       });
       server.on('error', (err) => {
