@@ -1,0 +1,43 @@
+{
+  // Environments let ESLint know which globals to expect (e.g., "window" for browser, "process" for Node).
+  "env": {
+    "browser": true,
+    "node": true,
+    "es2021": true
+  },
+  // "extends" pulls in recommended ESLint rules. This is a good starting point for new developers.
+  "extends": ["eslint:recommended"],
+  // "parserOptions" ensures ESLint can parse modern JavaScript features.
+  "parserOptions": {
+    "ecmaVersion": 2021,
+    "sourceType": "module"
+  },
+  // "rules" is where we turn on/off or configure specific linting rules.
+  // These examples are typical, beginner-friendly rules that promote clean code.
+  "rules": {
+    // Warn if variables are declared but never used.
+    "no-unused-vars": ["warn"],
+
+    // Encourage === and !== over == and != to avoid bugs with type coercion.
+    "eqeqeq": ["warn", "always"],
+
+    // Disallow console.log (set to “warn” so new devs learn to remove logs before production).
+    // You could also set this to "error" for stricter enforcement.
+    // "no-console": ["warn"],
+
+    // Prefer 'const' for variables that never get re-assigned.
+    "prefer-const": ["warn"],
+
+    // Disallow the use of var; use let or const instead.
+    "no-var": ["error"],
+
+    // Warn if an arrow function’s body unnecessarily uses braces if a concise body could be used.
+    "arrow-body-style": ["warn", "as-needed"],
+
+    // Suggest using template literals instead of string concatenation.
+    "prefer-template": ["warn"],
+
+    // Turn on strict mode for the entire codebase automatically (ES modules typically enable it anyway, but good to keep in config).
+    "strict": ["error", "never"]
+  }
+}
