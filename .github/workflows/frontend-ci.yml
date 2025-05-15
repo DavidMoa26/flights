@@ -1,14 +1,14 @@
-name: CI - Frontend
+name: CI - frontend
 
 on:
   push:
     branches: ['main']
     paths:
-      - 'Frontend/**'
+      - 'frontend/**'
   pull_request:
     branches: ['main']
     paths:
-      - 'Frontend/**'
+      - 'frontend/**'
 
 jobs:
   build-and-test:
@@ -25,15 +25,15 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd Frontend
+          cd frontend
           npm install
 
       - name: Run Linter
         run: |
-          cd Frontend
+          cd frontend
           npm run lint
 
       - name: Run Tests
         run: |
-          cd Frontend
+          cd frontend
           npm run test
