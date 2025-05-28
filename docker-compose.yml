@@ -1,0 +1,19 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - '4000:4000'
+    environment:
+      - PORT=4000
+      - POSTGRES_URI=${POSTGRES_URI}
+    env_file:
+      - .env
+
+  frontend:
+    build: ./frontend
+    ports:
+      - '3000:3000'
+    environment:
+      - VITE_SERVICE_URL=${VITE_SERVICE_URL}
+    env_file:
+      - .env
