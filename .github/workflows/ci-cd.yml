@@ -1,0 +1,217 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop, staging ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  NODE_VERSION: '18'
+  # Use external database for testing (you may want to create a separate test database)
+  POSTGRES_URI: postgresql://flights_4lmc_user:6p13imZsWMehclXjAZh6OXO7vIB5oGJc@dpg-d0it1pmuk2gs73ao4ml0-a.frankfurt-postgres.render.com/flights_4lmc
+
+jobs:
+  # Test Backend
+  test-backend:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: backend/package-lock.json
+
+    - name: Install backend dependencies
+      working-directory: ./backend
+      run: npm ci
+
+    - name: Run backend linting
+      working-directory: ./backend
+      run: npm run lint
+
+    - name: Run backend tests
+      working-directory: ./backend
+      run: npm test
+      env:
+        NODE_ENV: test
+        POSTGRES_URI: ${{ env.POSTGRES_URI }}
+
+  # Test Frontend
+  test-frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install frontend dependencies
+      working-directory: ./frontend
+      run: npm ci
+
+    - name: Run frontend linting
+      working-directory: ./frontend
+      run: npm run lint
+
+    - name: Run frontend tests
+      working-directory: ./frontend
+      run: npm test
+
+    - name: Build frontend
+      working-directory: ./frontend
+      run: npm run build
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: frontend-build
+        path: frontend/dist
+
+  # Integration Tests
+  integration-tests:
+    runs-on: ubuntu-latest
+    needs: [test-backend, test-frontend]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: |
+        cd backend && npm ci
+        cd ../frontend && npm ci
+
+    - name: Start backend
+      working-directory: ./backend
+      run: |
+        npm start &
+        sleep 10
+      env:
+        NODE_ENV: test
+        POSTGRES_URI: ${{ env.POSTGRES_URI }}
+
+    - name: Run integration tests
+      run: |
+        curl -f http://localhost:4000/health || exit 1
+        echo "Backend health check passed"
+
+  # Security Scan
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: [test-backend, test-frontend]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Run security audit for backend
+      working-directory: ./backend
+      run: npm audit --audit-level moderate
+
+    - name: Run security audit for frontend
+      working-directory: ./frontend
+      run: npm audit --audit-level moderate
+
+  # Build and Push Docker Images
+  build-and-push:
+    runs-on: ubuntu-latest
+    needs: [integration-tests, security-scan]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and push backend image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./backend
+        push: true
+        tags: |
+          ${{ secrets.DOCKER_USERNAME }}/flight-booking-backend:latest
+          ${{ secrets.DOCKER_USERNAME }}/flight-booking-backend:${{ github.sha }}
+
+    - name: Build and push frontend image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./frontend
+        push: true
+        tags: |
+          ${{ secrets.DOCKER_USERNAME }}/flight-booking-frontend:latest
+          ${{ secrets.DOCKER_USERNAME }}/flight-booking-frontend:${{ github.sha }}
+
+  # Deploy to Staging
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.ref == 'refs/heads/staging'
+    environment: staging
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy to staging
+      run: |
+        echo "Deploying to staging environment..."
+        # Add staging deployment commands here
+        # This could include SSH to staging server, updating Docker containers, etc.
+
+  # Deploy to Production
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main'
+    environment: production
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy to production
+      run: |
+        echo "Deploying to production environment..."
+        # Add production deployment commands here
+        # This should include proper blue-green deployment or rolling updates
+
+  # Notify on Completion
+  notify:
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: always()
+
+    steps:
+    - name: Notify deployment status
+      run: |
+        if [ "${{ needs.deploy-staging.result }}" == "success" ] || [ "${{ needs.deploy-production.result }}" == "success" ]; then
+          echo "Deployment completed successfully!"
+        else
+          echo "Deployment failed or was skipped"
+        fi
