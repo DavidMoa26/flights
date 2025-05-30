@@ -1,19 +1,32 @@
 services:
   backend:
-    build: ./backend
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+      no_cache: true
+    container_name: flight_booking_backend
     ports:
       - '4000:4000'
     environment:
+      - NODE_ENV=development
       - PORT=4000
-      - POSTGRES_URI=${POSTGRES_URI}
-    env_file:
-      - .env
+      - POSTGRES_URI=postgresql://flights_4lmc_user:6p13imZsWMehclXjAZh6OXO7vIB5oGJc@dpg-d0it1pmuk2gs73ao4ml0-a.frankfurt-postgres.render.com/flights_4lmc
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
 
   frontend:
-    build: ./frontend
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+      no_cache: true
+    container_name: flight_booking_frontend
     ports:
       - '3000:3000'
     environment:
-      - VITE_SERVICE_URL=${VITE_SERVICE_URL}
-    env_file:
-      - .env
+      - VITE_SERVICE_URL=http://localhost:4000
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules

@@ -1,16 +1,20 @@
-FROM node:20
+# Simple development Dockerfile for frontend
+FROM node:18-alpine
 
+# Set working directory
 WORKDIR /app
 
+# Copy package files
 COPY package*.json ./
+
+# Install all dependencies
 RUN npm install
 
+# Copy source code
 COPY . .
 
-RUN npm run build
-
-RUN npm install -g serve
-
+# Expose port
 EXPOSE 3000
 
-CMD ["serve", "-s", "dist"]
+# Start Vite dev server
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]
