@@ -168,7 +168,7 @@ describe('App Component', () => {
     render(<App />);
     
     // Try to search without filling required fields
-    fireEvent.click(screen.getByTestId('search-flights-btn')); // Changed from text to testId for better targeting
+    fireEvent.click(screen.getByTestId('search-flights-button')); // Changed from text to testId for better targeting
     
     await waitFor(() => {
       expect(screen.getByText('Please enter both origin and destination')).toBeInTheDocument();
@@ -181,7 +181,7 @@ describe('App Component', () => {
     // Fill with same origin and destination
     fireEvent.change(screen.getByLabelText('From'), { target: { value: 'New York' } });
     fireEvent.change(screen.getByLabelText('To'), { target: { value: 'New York' } });
-    fireEvent.click(screen.getByText('🔍 Search Flights'));
+    fireEvent.click(screen.getByTestId('search-flights-button')); // Changed from text to testId for better targeting
     
     await waitFor(() => {
       expect(screen.getByText('Origin and destination cannot be the same')).toBeInTheDocument();
