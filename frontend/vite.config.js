@@ -4,11 +4,18 @@ import react from '@vitejs/plugin-react';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  
+ 
   // Development server configuration
   server: {
     port: 3000,
     host: true, // Allow access from other machines
+    watch: {
+      usePolling: true,
+      interval: 1000,
+    },
+    hmr: {
+      port: 3000,
+    },
     proxy: {
       // Proxy API requests to backend during development
       '/api': {
@@ -18,7 +25,7 @@ export default defineConfig({
       }
     }
   },
-
+  
   // Build configuration
   build: {
     outDir: 'dist',
@@ -32,7 +39,7 @@ export default defineConfig({
       }
     }
   },
-
+  
   // Test configuration
   test: {
     globals: true,
@@ -49,15 +56,15 @@ export default defineConfig({
       ]
     }
   },
-
+  
   // Environment variables prefix
   envPrefix: 'VITE_',
-
+  
   // CSS configuration
   css: {
     devSourcemap: true
   },
-
+  
   // Preview server (for testing built app)
   preview: {
     port: 3000,

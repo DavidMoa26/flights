@@ -1,15 +1,16 @@
 import { Sequelize } from 'sequelize';
-import 'dotenv/config';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 export const sequelize = new Sequelize(process.env.POSTGRES_URI, {
   dialect: 'postgres',
-  logging: false,
   dialectOptions: {
-    ssl: {
-      require: true,
-      rejectUnauthorized: false,
-    },
+    ssl: false, // Disable SSL for local development
+    // OR for production with SSL:
+    // ssl: process.env.NODE_ENV === 'production' ? { require: true, rejectUnauthorized: false } : false
   },
+  logging: process.env.NODE_ENV === 'development' ? console.log : false,
 });
 
 export async function initDb() {

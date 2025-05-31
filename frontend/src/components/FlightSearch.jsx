@@ -23,7 +23,7 @@ const FlightSearch = ({ onSearch, setLoading, setError }) => {
   const loadPopularDestinations = async () => {
     try {
       const destinations = await flightAPI.getPopularDestinations();
-      setPopularDestinations(destinations.slice(0, 6)); // Show top 6
+      setPopularDestinations(destinations.slice(0, 20)); // Show top 20
     } catch (error) {
       console.error('Error loading popular destinations:', error);
     }

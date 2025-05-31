@@ -54,11 +54,23 @@ const startServer = async () => {
   try {
     await sequelize.authenticate();
     console.log('Database connection established successfully.');
-    
+   
     // Sync database models
-    await sequelize.sync({ force: true }); // Use { force: true } only in development to reset the database
+    await sequelize.sync({ force: false });
     console.log('Database synchronized successfully.');
     
+    // Run seeding if flag is set
+    if (process.env.RUN_SEED === 'true') {
+      console.log('🌱 Running database seeding...');
+      try {
+        const { seedDatabase } = await import('./data-access/seed.js');
+        await seedDatabase();
+        console.log('✅ Database seeding completed!');
+      } catch (seedError) {
+        console.log('⚠️ Seeding failed, but continuing:', seedError.message);
+      }
+    }
+   
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });

@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+// All flights are on June 15, change it if date exeds (Find and replalce -06- with -07- or -08- etc.)
 const sampleFlights = [
   {
     flightNumber: 'AA101',
@@ -204,45 +205,47 @@ const sampleFlights = [
 
 export const seedDatabase = async () => {
   try {
-    console.log('🌱 Starting database seeding...');
-    
-    // Connect to database
+    // Add connection retry logic
+    console.log('🌱 Connecting to database...');
     await sequelize.authenticate();
-    console.log('✅ Database connection established');
+    console.log('✅ Database connected');
     
-    // Sync database (create tables if they don't exist)
-    await sequelize.sync({ force: false });
-    console.log('✅ Database synchronized');
+    // Sync database (recreate tables)
+    console.log('🔄 Syncing database...');
+    await sequelize.sync({ force: true });
+    console.log('✅ Database synced');
     
-    // Check if flights already exist
-    const existingFlights = await Flight.count();
-    if (existingFlights > 0) {
-      console.log(`ℹ️  Database already contains ${existingFlights} flights. Skipping seed.`);
-      return;
-    }
+    // Insert sample flights data
+    console.log('📝 Inserting sample flights...');
+    const flights = await Flight.bulkCreate(sampleFlights);
+    console.log(`✅ Successfully created ${flights.length} flights`);
     
-    // Create sample flights
-    console.log('📝 Creating sample flights...');
-    const createdFlights = await Flight.bulkCreate(sampleFlights);
-    console.log(`✅ Successfully created ${createdFlights.length} sample flights`);
+    // Log some sample data
+    console.log('📊 Sample flights created:');
+    flights.slice(0, 3).forEach(flight => {
+      console.log(`   ${flight.flightNumber}: ${flight.origin} → ${flight.destination} ($${flight.price})`);
+    });
     
-    console.log('🎉 Database seeding completed successfully!');
+    console.log('🌱 Database seeding completed successfully!');
     
   } catch (error) {
     console.error('❌ Error seeding database:', error);
     throw error;
+  } finally {
+    await sequelize.close();
+    console.log('🔌 Database connection closed');
   }
 };
 
-// Run seeder if this file is executed directly
+// If running directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   seedDatabase()
     .then(() => {
-      console.log('Seeding completed. Exiting...');
+      console.log('✅ Seeding process completed');
       process.exit(0);
     })
     .catch((error) => {
-      console.error('Seeding failed:', error);
+      console.error('❌ Seeding process failed:', error);
       process.exit(1);
     });
 }
