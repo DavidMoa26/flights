@@ -59,17 +59,27 @@ jobs:
         done
         echo "PostgreSQL is ready!"
 
+    - name: Setup test environment
+      working-directory: ./backend
+      run: |
+        # Create test environment file
+        cat > .env.test << EOF
+        NODE_ENV=test
+        POSTGRES_URI=postgresql://test_user:test_password@localhost:5432/flights_test_db?sslmode=disable
+        DB_HOST=localhost
+        DB_PORT=5432
+        DB_NAME=flights_test_db
+        DB_USER=test_user
+        DB_PASSWORD=test_password
+        EOF
+        
+        echo "✅ Test environment configured"
+
     - name: Run backend tests
       working-directory: ./backend
       run: npm test
       env:
         NODE_ENV: test
-        POSTGRES_URI: postgresql://test_user:test_password@localhost:5432/flights_test_db?sslmode=disable
-        DB_HOST: localhost
-        DB_PORT: 5432
-        DB_NAME: flights_test_db
-        DB_USER: test_user
-        DB_PASSWORD: test_password
 
   # Test Frontend
   test-frontend:

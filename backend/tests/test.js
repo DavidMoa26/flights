@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import request from 'supertest';
-import app from '../src/index.js';
+import app from '../src/app.js';  // Import app.js instead of index.js
 import { sequelize, Flight, Booking } from '../src/data-access/models.js';
 
 describe('Flight Booking API', () => {

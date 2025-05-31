@@ -1,14 +1,15 @@
-# Simple development Dockerfile for backend
 FROM node:18-alpine
 
-# Set working directory
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
-# Install ALL dependencies (including devDependencies)
+# Install dependencies
 RUN npm install
+
+# Install nodemon globally for development
+RUN npm install -g nodemon
 
 # Copy source code
 COPY . .
@@ -16,5 +17,5 @@ COPY . .
 # Expose port
 EXPOSE 4000
 
-# Start with nodemon for development
-CMD ["npx", "nodemon", "src/index.js"]
+# Start with nodemon for hot reload
+CMD ["nodemon", "src/index.js"]
