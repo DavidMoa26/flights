@@ -13,12 +13,14 @@ const Header = ({ onNewSearch, onBookingLookup, currentView }) => {
           <button 
             className={`nav-button ${currentView === 'search' || currentView === 'results' ? 'active' : ''}`}
             onClick={onNewSearch}
+            data-testid="search-flights-nav-button"
           >
             Search Flights
           </button>
           <button 
             className={`nav-button ${currentView === 'lookup' ? 'active' : ''}`}
             onClick={onBookingLookup}
+            data-testid="manage-booking-nav-button"
           >
             Manage Booking
           </button>

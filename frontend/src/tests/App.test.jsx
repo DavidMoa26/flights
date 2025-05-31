@@ -168,7 +168,7 @@ describe('App Component', () => {
     render(<App />);
     
     // Try to search without filling required fields
-    fireEvent.click(screen.getByText('🔍 Search Flights'));
+    fireEvent.click(screen.getByTestId('search-flights-btn')); // Changed from text to testId for better targeting
     
     await waitFor(() => {
       expect(screen.getByText('Please enter both origin and destination')).toBeInTheDocument();
@@ -210,7 +210,7 @@ describe('App Component', () => {
     render(<App />);
     
     // Click on Manage Booking
-    fireEvent.click(screen.getByText('Manage Booking'));
+    fireEvent.click(screen.getByTestId('manage-booking-nav-button')); // Changed from text to testId for better targeting
     
     // Check if we're on the lookup page
     expect(screen.getByText('Manage Your Booking')).toBeInTheDocument();
@@ -302,7 +302,7 @@ describe('App Component', () => {
     fireEvent.change(screen.getByLabelText(/Phone Number/), { target: { value: '+1-555-123-4567' } });
     
     // Submit booking
-    fireEvent.click(screen.getByText(/Confirm Booking/));
+    fireEvent.click(screen.getByTestId('confirm-booking-button')); // Changed from text to testId for better targeting
     
     // Should navigate to confirmation
     await waitFor(() => {

@@ -163,7 +163,7 @@ const FlightSearch = ({ onSearch, setLoading, setError }) => {
             </div>
           </div>
 
-          <button type="submit" className="search-button">
+          <button type="submit" className="search-button" id="search-flights-btn">
             🔍 Search Flights
           </button>
         </form>

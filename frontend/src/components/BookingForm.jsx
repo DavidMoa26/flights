@@ -234,7 +234,7 @@ const BookingForm = ({ flight, onBookingComplete, onBack, setLoading, setError }
                 <button type="button" onClick={onBack} className="cancel-button">
                   Cancel
                 </button>
-                <button type="submit" className="confirm-booking-button">
+                <button type="submit" className="confirm-booking-button" data-testid="confirm-booking-button">
                   Confirm Booking - {utils.formatPrice(totalPrice)}
                 </button>
               </div>
