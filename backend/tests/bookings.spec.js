@@ -7,29 +7,53 @@ describe('Booking API', () => {
   let testFlight;
   let testBooking;
 
-  before(async () => {
-    // Sync database for testing
-    await sequelize.sync({ force: true });
+  before(async function() {
+    this.timeout(15000);
     
-    // Create a test flight
-    testFlight = await Flight.create({
-      flightNumber: 'TEST123',
-      airline: 'Test Airlines',
-      origin: 'New York',
-      destination: 'Los Angeles',
-      departureTime: new Date(Date.now() + 24 * 60 * 60 * 1000),
-      arrivalTime: new Date(Date.now() + 24 * 60 * 60 * 1000 + 5 * 60 * 60 * 1000),
-      duration: 300,
-      price: 299.99,
-      totalSeats: 150,
-      availableSeats: 150,
-      aircraft: 'Boeing 737'
-    });
+    try {
+      console.log('🧪 Setting up booking test database...');
+      
+      // Clean database including enum types
+      await sequelize.drop({ cascade: true });
+      console.log('✅ Booking test database cleaned');
+      
+      // Sync database for testing
+      await sequelize.sync({ force: true });
+      console.log('✅ Booking test database synchronized');
+      
+      // Create a test flight
+      testFlight = await Flight.create({
+        flightNumber: 'BK001',
+        airline: 'Booking Test Airlines',
+        origin: 'New York',
+        destination: 'Los Angeles',
+        departureTime: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        arrivalTime: new Date(Date.now() + 24 * 60 * 60 * 1000 + 5 * 60 * 60 * 1000),
+        duration: 300,
+        price: 299.99,
+        totalSeats: 150,
+        availableSeats: 150,
+        aircraft: 'Boeing 737'
+      });
+      
+      console.log('✅ Test flight for bookings created');
+    } catch (error) {
+      console.error('❌ Booking test setup failed:', error);
+      throw error;
+    }
   });
 
-  after(async () => {
-    await sequelize.drop();
-    await sequelize.close();
+  after(async function() {
+    this.timeout(10000);
+    
+    try {
+      console.log('🧹 Cleaning up booking test database...');
+      await sequelize.drop({ cascade: true });
+      await sequelize.close();
+      console.log('✅ Booking test cleanup completed');
+    } catch (error) {
+      console.error('❌ Booking test cleanup failed:', error);
+    }
   });
 
   describe('POST /api/bookings', () => {
@@ -54,7 +78,7 @@ describe('Booking API', () => {
       expect(res.body.numberOfPassengers).to.equal(2);
       expect(res.body.totalPrice).to.equal('599.98'); // 299.99 * 2
       expect(res.body.specialRequests).to.equal('Window seat preferred');
-      expect(res.body.flight).to.have.property('flightNumber', 'TEST123');
+      expect(res.body.flight).to.have.property('flightNumber', 'BK001');
 
       testBooking = res.body;
     });
@@ -137,7 +161,7 @@ describe('Booking API', () => {
       expect(res.status).to.equal(200);
       expect(res.body.id).to.equal(testBooking.id);
       expect(res.body.passengerName).to.equal('John Doe');
-      expect(res.body.flight).to.have.property('flightNumber', 'TEST123');
+      expect(res.body.flight).to.have.property('flightNumber', 'BK001');
     });
 
     it('should return 404 for non-existent booking', async () => {
