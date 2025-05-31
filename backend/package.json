@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "test": "mocha tests/*.spec.js",
+    "test": "NODE_ENV=test mocha tests/*.spec.js --timeout 15000 --exit",
+    "test:clean": "NODE_ENV=test node -e \"import('./src/data-access/database.js').then(({sequelize}) => sequelize.drop({cascade:true}).then(() => process.exit(0)))\"",
     "lint": "eslint src/*"
   },
   "type": "module",

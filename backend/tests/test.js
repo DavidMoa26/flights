@@ -6,30 +6,58 @@ import { sequelize, Flight, Booking } from '../src/data-access/models.js';
 describe('Flight Booking API', () => {
   let testFlight;
 
-  before(async () => {
-    // Sync database for testing
-    await sequelize.sync({ force: true });
+  before(async function() {
+    // Increase timeout for database operations
+    this.timeout(15000);
     
-    // Create a test flight
-    testFlight = await Flight.create({
-      flightNumber: 'TEST123',
-      airline: 'Test Airlines',
-      origin: 'New York',
-      destination: 'Los Angeles',
-      departureTime: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
-      arrivalTime: new Date(Date.now() + 24 * 60 * 60 * 1000 + 5 * 60 * 60 * 1000), // Tomorrow + 5 hours
-      duration: 300,
-      price: 299.99,
-      totalSeats: 150,
-      availableSeats: 150,
-      aircraft: 'Boeing 737'
-    });
+    try {
+      console.log('🧪 Setting up test database...');
+      
+      // First, drop everything including enum types
+      await sequelize.drop({ cascade: true });
+      console.log('✅ Test database cleaned');
+      
+      // Sync database for testing (recreate everything fresh)
+      await sequelize.sync({ force: true });
+      console.log('✅ Test database synchronized');
+      
+      // Create a test flight
+      testFlight = await Flight.create({
+        flightNumber: 'TEST123',
+        airline: 'Test Airlines',
+        origin: 'New York',
+        destination: 'Los Angeles',
+        departureTime: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
+        arrivalTime: new Date(Date.now() + 24 * 60 * 60 * 1000 + 5 * 60 * 60 * 1000), // Tomorrow + 5 hours
+        duration: 300,
+        price: 299.99,
+        totalSeats: 150,
+        availableSeats: 150,
+        aircraft: 'Boeing 737'
+      });
+      
+      console.log('✅ Test flight created successfully');
+    } catch (error) {
+      console.error('❌ Test setup failed:', error);
+      throw error;
+    }
   });
 
-  after(async () => {
-    // Clean up database
-    await sequelize.drop();
-    await sequelize.close();
+  after(async function() {
+    this.timeout(10000);
+    
+    try {
+      console.log('🧹 Cleaning up test database...');
+      
+      // Drop everything including enum types
+      await sequelize.drop({ cascade: true });
+      await sequelize.close();
+      
+      console.log('✅ Test database cleaned up successfully');
+    } catch (error) {
+      console.error('❌ Test cleanup failed:', error);
+      // Don't throw here to avoid masking test failures
+    }
   });
 
   describe('GET /health', () => {
