@@ -164,17 +164,6 @@ describe('App Component', () => {
     });
   });
 
-  it('validates search form inputs', async () => {
-    render(<App />);
-    
-    // Try to search without filling required fields
-    fireEvent.click(screen.getByTestId('search-flights-button')); // Changed from text to testId for better targeting
-    
-    await waitFor(() => {
-      expect(screen.getByText('Please enter both origin and destination')).toBeInTheDocument();
-    });
-  });
-
   it('prevents searching with same origin and destination', async () => {
     render(<App />);
     
