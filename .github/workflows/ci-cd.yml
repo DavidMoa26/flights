@@ -2,13 +2,13 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop, staging ]
+    branches: [ main, development, staging ]
   pull_request:
     branches: [ main, develop ]
 
 env:
   NODE_VERSION: '18'
-  # Use external database for testing (you may want to create a separate test database)
+  # Use external database for testing
   POSTGRES_URI: postgresql://flights_4lmc_user:6p13imZsWMehclXjAZh6OXO7vIB5oGJc@dpg-d0it1pmuk2gs73ao4ml0-a.frankfurt-postgres.render.com/flights_4lmc
 
 jobs:
