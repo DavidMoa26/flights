@@ -4,9 +4,9 @@ import { sequelize } from '../data-access/database.js';
 
 // Generate unique booking reference
 const generateBookingReference = () => {
-  const timestamp = Date.now().toString();
-  const random = Math.random().toString(36).substring(2, 8).toUpperCase();
-  return `BK${timestamp.slice(-6)}${random}`;
+  const timestamp = Date.now().toString(36).toUpperCase();
+  const random = Math.random().toString(36).substring(2, 5).toUpperCase();
+  return `FB${timestamp}${random}`;
 };
 
 // Create a new booking
@@ -73,7 +73,7 @@ export const createBooking = async (req, res) => {
 
     // Create booking
     const booking = await Booking.create({
-      bookingReference,  // Added this line
+      bookingReference,
       flightId,
       passengerName,
       passengerEmail,
