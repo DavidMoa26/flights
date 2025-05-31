@@ -49,7 +49,6 @@ describe('Booking API', () => {
     try {
       console.log('🧹 Cleaning up booking test database...');
       await sequelize.drop({ cascade: true });
-      await sequelize.close();
       console.log('✅ Booking test cleanup completed');
     } catch (error) {
       console.error('❌ Booking test cleanup failed:', error);
@@ -120,12 +119,27 @@ describe('Booking API', () => {
     });
 
     it('should fail when requesting more seats than available', async () => {
+      // Create a flight with only 3 available seats
+      const lowSeatFlight = await Flight.create({
+        flightNumber: 'LOW001',
+        airline: 'Low Seat Airlines', 
+        origin: 'Boston',
+        destination: 'Chicago',
+        departureTime: new Date(Date.now() + 48 * 60 * 60 * 1000),
+        arrivalTime: new Date(Date.now() + 48 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000),
+        duration: 120,
+        price: 199.99,
+        totalSeats: 10,
+        availableSeats: 3, // Only 3 seats available
+        aircraft: 'Small Plane'
+      });
+
       const tooManySeats = {
-        flightId: testFlight.id,
+        flightId: lowSeatFlight.id,
         passengerName: 'Jane Doe',
-        passengerEmail: 'jane@test.com',
+        passengerEmail: 'jane@test.com', 
         passengerPhone: '+1-555-123-4567',
-        numberOfPassengers: 200 // More than available
+        numberOfPassengers: 5 // More than the 3 available seats
       };
 
       const res = await request(app)
@@ -138,7 +152,7 @@ describe('Booking API', () => {
 
     it('should fail with non-existent flight', async () => {
       const invalidFlightData = {
-        flightId: 'non-existent-id',
+        flightId: '123e4567-e89b-12d3-a456-426614174000',
         passengerName: 'Jane Doe',
         passengerEmail: 'jane@test.com',
         passengerPhone: '+1-555-123-4567'
@@ -166,7 +180,7 @@ describe('Booking API', () => {
 
     it('should return 404 for non-existent booking', async () => {
       const res = await request(app)
-        .get('/api/bookings/non-existent-id');
+        .get('/api/bookings/123e4567-e89b-12d3-a456-426614174000');
 
       expect(res.status).to.equal(404);
       expect(res.body.error).to.equal('Booking not found');
@@ -238,7 +252,7 @@ describe('Booking API', () => {
 
     it('should return 404 for non-existent booking', async () => {
       const res = await request(app)
-        .put('/api/bookings/non-existent-id/cancel');
+        .put('/api/bookings/123e4567-e89b-12d3-a456-426614174000/cancel');
 
       expect(res.status).to.equal(404);
       expect(res.body.error).to.equal('Booking not found');

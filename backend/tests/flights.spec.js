@@ -93,7 +93,7 @@ describe('Flight API', () => {
     });
 
     it('should return 404 for non-existent flight', async () => {
-      const res = await request(app).get('/api/flights/non-existent-id');
+      const res = await request(app).get('/api/flights/123e4567-e89b-12d3-a456-426614174000');
       expect(res.status).to.equal(404);
       expect(res.body).to.have.property('error', 'Flight not found');
     });
