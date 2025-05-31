@@ -1,5 +1,13 @@
 import { Booking, Flight } from '../data-access/models.js';
+import { updateFlightAvailability } from './flightController.js';
 import { sequelize } from '../data-access/database.js';
+
+// Generate unique booking reference
+const generateBookingReference = () => {
+  const timestamp = Date.now().toString();
+  const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+  return `BK${timestamp.slice(-6)}${random}`;
+};
 
 // Create a new booking
 export const createBooking = async (req, res) => {
@@ -60,8 +68,12 @@ export const createBooking = async (req, res) => {
     // Calculate total price
     const totalPrice = parseFloat(flight.price) * numberOfPassengers;
 
+    // Generate unique booking reference
+    const bookingReference = generateBookingReference();
+
     // Create booking
     const booking = await Booking.create({
+      bookingReference,  // Added this line
       flightId,
       passengerName,
       passengerEmail,
