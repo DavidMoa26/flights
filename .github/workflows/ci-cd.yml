@@ -169,6 +169,7 @@ jobs:
         npm start &
         echo $! > backend.pid
         sleep 20
+        node ./src/data-access/seed.js
         echo "Backend started, checking if it's responding..."
         curl http://localhost:4000/health || {
           echo "Backend not responding, checking if it's still running..."
