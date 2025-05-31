@@ -169,7 +169,8 @@ export const updateFlightAvailability = async (flightId, seatsBooked) => {
 
     return flight;
   } catch (error) {
-    throw error;
+    console.error('Failed to update flight:', error);
+    throw new Error('Could not update flight availability');
   }
 };
 

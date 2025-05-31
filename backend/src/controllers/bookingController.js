@@ -1,5 +1,4 @@
 import { Booking, Flight } from '../data-access/models.js';
-import { updateFlightAvailability } from './flightController.js';
 import { sequelize } from '../data-access/database.js';
 
 // Create a new booking

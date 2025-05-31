@@ -170,9 +170,9 @@ export const utils = {
     return emailRegex.test(email);
   },
 
-  // Validate phone number (basic validation)
+  // Validate phone number (Fixed REGEX for ESLint was: /^[+]?[\d\s\-()]{10,}$/;)
   validatePhone: (phone) => {
-    const phoneRegex = /^[\+]?[\d\s\-\(\)]{10,}$/;
+    const phoneRegex = /^[+]?[\d\s\-()]{10,}$/;
     return phoneRegex.test(phone);
   }
 };

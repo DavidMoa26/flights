@@ -132,9 +132,9 @@ Booking.belongsTo(Flight, {
   as: 'flight'
 });
 
-// Generate booking reference
+// Generate booking reference, changed from ('FB' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 3).toUpperCase()) ESLint
 Booking.beforeCreate((booking) => {
-  booking.bookingReference = 'FB' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 3).toUpperCase();
+  booking.bookingReference = `FB-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substr(2, 3).toUpperCase()}`;
 });
 
 export { sequelize };
