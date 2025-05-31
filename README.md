@@ -18,4 +18,4 @@ After successful installation of the script use the following Local URLs to:
 [http://localhost:3000](http://localhost:3000/)
 
 ### Backend
-[http://localhost:3000](http://localhost:4000/)
+[http://localhost:4000](http://localhost:4000/)
