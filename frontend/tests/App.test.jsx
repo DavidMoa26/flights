@@ -20,7 +20,7 @@ vi.mock('../services/api', () => ({
     formatTime: (date) => new Date(date).toLocaleTimeString(),
     formatDuration: (minutes) => `${Math.floor(minutes / 60)}h ${minutes % 60}m`,
     validateEmail: (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
-    validatePhone: (phone) => /^[\+]?[\d\s\-\(\)]{10,}$/.test(phone),
+    validatePhone: (phone) => /^[+]?[\d\s()-]{10,}$/.test(phone),
   }
 }));
 

@@ -153,24 +153,17 @@ export const createFlight = async (req, res) => {
 
 // Update flight availability (used internally when booking)
 export const updateFlightAvailability = async (flightId, seatsBooked) => {
-  try {
-    const flight = await Flight.findByPk(flightId);
-    if (!flight) {
-      throw new Error('Flight not found');
-    }
-
-    if (flight.availableSeats < seatsBooked) {
-      throw new Error('Not enough available seats');
-    }
-
-    await flight.update({
-      availableSeats: flight.availableSeats - seatsBooked
-    });
-
-    return flight;
-  } catch (error) {
-    throw error;
+  const flight = await Flight.findByPk(flightId);
+  if (!flight) {
+    throw new Error('Flight not found');
   }
+  if (flight.availableSeats < seatsBooked) {
+    throw new Error('Not enough available seats');
+  }
+  await flight.update({
+    availableSeats: flight.availableSeats - seatsBooked
+  });
+  return flight;
 };
 
 // Get popular routes (Origin -> Destination)
