@@ -1,19 +1,19 @@
 /* eslint-env mocha */
-process.env.NODE_ENV = 'test';
+process.env.NODE_ENV = "test";
 
-import chai from 'chai';
-import chaiHttp from 'chai-http';
-import { app, startTestServer } from './test.js';
+import chai from "chai";
+import chaiHttp from "chai-http";
+import { app, startTestServer } from "./test.js";
 
 const { expect } = chai;
 chai.use(chaiHttp);
 let server = null;
 
-describe('Backend Tests', () => {
+describe("Backend Tests", () => {
   before(async function () {
     this.timeout(10000);
     server = await startTestServer();
-    console.log('tests is running!');
+    console.log("tests is running!");
   });
 
   after(async () => {
@@ -26,7 +26,7 @@ describe('Backend Tests', () => {
       .post(`/create-flight`, {})
       .end((err, res) => {
         expect(res).to.have.status(201);
-        expect(res.body).equal('createFlight!');
+        expect(res.body).equal("createFlight!!");
         done();
       });
   });
