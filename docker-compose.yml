@@ -1,19 +1,27 @@
 services:
   backend:
     build: ./backend
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
     ports:
-      - '4000:4000'
+      - "4000:4000"
     environment:
       - PORT=4000
       - POSTGRES_URI=${POSTGRES_URI}
     env_file:
       - .env
+    command: npm run dev
 
   frontend:
     build: ./frontend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     ports:
-      - '3000:3000'
+      - "3000:3000"
     environment:
       - VITE_SERVICE_URL=${VITE_SERVICE_URL}
     env_file:
       - .env
+    command: npm run dev

@@ -1,41 +1,36 @@
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg';
-import './App.css';
-import axios from 'axios';
+import { useEffect } from "react";
+import "./App.css";
+// import FlightSearch from "@/components/FlightSearch";
 
 function App() {
-  const baseUrl = import.meta.env.VITE_SERVICE_URL;
-  console.log(baseUrl);
+  useEffect(() => {
+    const createEmptyFlight = async () => {
+      try {
+        const response = await fetch("http://localhost:4000/create-flight", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({}),
+        });
 
-  const onSubmit = async () => {
-    const response = await axios.post(
-      `${import.meta.env.VITE_SERVICE_URL}/create-flight`,
-      {}
-    );
-    console.log(response.data);
-  };
+        const data = await response.json();
+        console.log("Response from backend:", data);
+      } catch (error) {
+        console.error("Error sending empty flight:", error);
+      }
+    };
+
+    createEmptyFlight();
+  }, []);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={onSubmit}>Click!</button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div className="app">
+      <header className="p-4 bg-white shadow-sm">
+        <h1 className="text-2xl font-bold text-center">Flight Booking</h1>
+      </header>
+      <main>{/* <FlightSearch /> */}</main>
+    </div>
   );
 }
 
