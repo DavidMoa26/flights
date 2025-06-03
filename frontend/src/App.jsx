@@ -3,10 +3,12 @@ import "./App.css";
 // import FlightSearch from "@/components/FlightSearch";
 
 function App() {
+  const baseUrl = import.meta.env.VITE_SERVICE_URL;
+
   useEffect(() => {
     const createEmptyFlight = async () => {
       try {
-        const response = await fetch("http://localhost:4000/create-flight", {
+        const response = await fetch(`${baseUrl}/create-flight`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
