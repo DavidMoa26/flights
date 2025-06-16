@@ -32,8 +32,8 @@ const mockFlights = [
     airline: 'American Airlines',
     origin: 'New York',
     destination: 'Los Angeles',
-    departureTime: '2025-06-15T08:00:00Z',
-    arrivalTime: '2025-06-15T14:30:00Z',
+    departureTime: '2025-08-15T08:00:00Z',
+    arrivalTime: '2025-08-15T14:30:00Z',
     duration: 390,
     price: 299.99,
     availableSeats: 45,
@@ -47,8 +47,8 @@ const mockFlights = [
     airline: 'Delta Air Lines',
     origin: 'New York',
     destination: 'Miami',
-    departureTime: '2025-06-15T10:30:00Z',
-    arrivalTime: '2025-06-15T13:45:00Z',
+    departureTime: '2025-08-15T10:30:00Z',
+    arrivalTime: '2025-08-15T13:45:00Z',
     duration: 195,
     price: 189.99,
     availableSeats: 78,
@@ -111,12 +111,12 @@ describe('App Component', () => {
 
     fireEvent.change(originInput, { target: { value: 'New York' } });
     fireEvent.change(destinationInput, { target: { value: 'Los Angeles' } });
-    fireEvent.change(dateInput, { target: { value: '2025-06-15' } });
+    fireEvent.change(dateInput, { target: { value: '2025-08-15' } });
     fireEvent.change(passengersSelect, { target: { value: '2' } });
 
     expect(originInput.value).toBe('New York');
     expect(destinationInput.value).toBe('Los Angeles');
-    expect(dateInput.value).toBe('2025-06-15');
+    expect(dateInput.value).toBe('2025-08-15');
     expect(passengersSelect.value).toBe('2');
   });
 
@@ -131,7 +131,7 @@ describe('App Component', () => {
     // Fill out search form
     fireEvent.change(screen.getByLabelText('From'), { target: { value: 'New York' } });
     fireEvent.change(screen.getByLabelText('To'), { target: { value: 'Los Angeles' } });
-    fireEvent.change(screen.getByLabelText('Departure Date'), { target: { value: '2025-06-15' } });
+    fireEvent.change(screen.getByLabelText('Departure Date'), { target: { value: '2025-08-15' } });
     
     // Submit search
     fireEvent.click(screen.getByText('🔍 Search Flights'));
