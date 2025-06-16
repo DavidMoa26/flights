@@ -5,7 +5,7 @@ import { seedDatabase } from './data-access/seed.js';
 
 dotenv.config();
 
-const PORT = process.env.PORT || 4006;
+const PORT = process.env.PORT || 4000;
 
 // Database connection and server start
 const startServer = async () => {

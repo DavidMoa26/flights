@@ -9,12 +9,13 @@ if (process.env.NODE_ENV === 'test') {
 
 export const sequelize = new Sequelize(process.env.POSTGRES_URI, {
   dialect: 'postgres',
+  logging: false, // Disable logging for production
   dialectOptions: {
-    ssl: false, // Disable SSL for local development
-    // OR for production with SSL:
-    // ssl: process.env.NODE_ENV === 'production' ? { require: true, rejectUnauthorized: false } : false
+    ssl: {
+      require: true,
+      rejectUnauthorized: false, // Allow self-signed certificates
+    } 
   },
-  logging: process.env.NODE_ENV === 'development' ? console.log : false,
 });
 
 export async function initDb() {
