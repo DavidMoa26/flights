@@ -262,12 +262,6 @@ jobs:
         run: |
           docker build -t europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/frontend ./frontend
           docker push europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/frontend
-      
-      # 🐳 Build & Push Database Seeder Image
-      - name: Build and Push Database Seeder Image
-        run: |
-          docker build -t europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/db-seeder ./backend/src/data-access
-          docker push europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/db-seeder
 
       # 🚀 Deploy Backend
       - name: Deploy Backend to Cloud Run
@@ -279,21 +273,6 @@ jobs:
             --allow-unauthenticated \
             --port=4000 \
             --set-env-vars=POSTGRES_URI=${{ secrets.POSTGRES_URI }}
-      
-      # 🚀 Deploy Database Seeder
-      - name: Deploy Database Seeder to Cloud Run
-        run: |
-          gcloud run jobs deploy db-seeder \
-            --image=europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/db-seeder \
-            --region=europe-west1 \
-            --set-env-vars=POSTGRES_URI=${{ secrets.POSTGRES_URI }} \
-            --platform=managed \
-            --allow-unauthenticated
-      
-      # 🏗️ Execute Database Seeder Job
-      - name: Execute Database Seeder Job
-        run: |
-          gcloud run jobs execute db-seeder --region=europe-west1
 
       # 🚀 Deploy Frontend
       - name: Deploy Frontend to Cloud Run
@@ -305,6 +284,13 @@ jobs:
             --allow-unauthenticated \
             --port=3000 \
             --set-env-vars=VITE_SERVICE_URL=${{ secrets.VITE_SERVICE_URL }}
+
+      # Run Seeder
+      - name: Run Seeder
+        run: |
+          node ./backend/src/data-access/seed.js
+        env:
+          POSTGRES_URI: ${{ secrets.POSTGRES_URI }}
 
   # Pipeline Summary
   pipeline-summary:
