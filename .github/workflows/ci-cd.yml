@@ -289,36 +289,59 @@ jobs:
           exit 1
         fi
 
-# 🐳 Build & Push Backend Image
-    - name: Build and Push Backend Image
-      run: |
-        docker build -t europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/backend ./backend
-        docker push europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/backend
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    needs: [pipeline-summary]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    # 🐳 Build & Push Frontend Image
-    - name: Build and Push Frontend Image
-      run: |
-        docker build -t europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/frontend ./frontend
-        docker push europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/frontend
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: "${{ secrets.GCP_SA_KEY }}"
 
-    # 🚀 Deploy Backend
-    - name: Deploy Backend to Cloud Run
-      run: |
-        gcloud run deploy backend \
-          --image=europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/backend \
-          --platform=managed \
-          --region=europe-west1 \
-          --allow-unauthenticated \
-          --port=4000 \
-          --set-env-vars=POSTGRES_URI=${{ secrets.POSTGRES_URI }}
+      - name: Set up Google Cloud CLI
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: devops-project-463018
 
-    # 🚀 Deploy Frontend
-    - name: Deploy Frontend to Cloud Run
-      run: |
-        gcloud run deploy frontend \
-          --image=europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/frontend \
-          --platform=managed \
-          --region=europe-west1 \
-          --allow-unauthenticated \
-          --port=3000 \
-          --set-env-vars=VITE_SERVICE_URL=${{ secrets.VITE_SERVICE_URL }}
+      - name: Enable Cloud Run API
+        run: gcloud services enable run.googleapis.com
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker europe-west1-docker.pkg.dev
+
+      # 🐳 Build & Push Backend Image
+      - name: Build and Push Backend Image
+        run: |
+          docker build -t europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/backend ./backend
+          docker push europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/backend
+
+      # 🐳 Build & Push Frontend Image
+      - name: Build and Push Frontend Image
+        run: |
+          docker build -t europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/frontend ./frontend
+          docker push europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/frontend
+
+      # 🚀 Deploy Backend
+      - name: Deploy Backend to Cloud Run
+        run: |
+          gcloud run deploy backend \
+            --image=europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/backend \
+            --platform=managed \
+            --region=europe-west1 \
+            --allow-unauthenticated \
+            --port=4000 \
+            --set-env-vars=POSTGRES_URI=${{ secrets.POSTGRES_URI }}
+
+      # 🚀 Deploy Frontend
+      - name: Deploy Frontend to Cloud Run
+        run: |
+          gcloud run deploy frontend \
+            --image=europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/frontend \
+            --platform=managed \
+            --region=europe-west1 \
+            --allow-unauthenticated \
+            --port=3000 \
+            --set-env-vars=VITE_SERVICE_URL=${{ secrets.VITE_SERVICE_URL }}
