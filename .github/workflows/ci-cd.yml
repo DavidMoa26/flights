@@ -285,13 +285,6 @@ jobs:
             --port=3000 \
             --set-env-vars=VITE_SERVICE_URL=${{ secrets.VITE_SERVICE_URL }}
 
-      # Run Seeder
-      - name: Run Seeder
-        run: |
-          node ./backend/src/data-access/seed.js
-        env:
-          POSTGRES_URI: ${{ secrets.POSTGRES_URI }}
-
   # Pipeline Summary
   pipeline-summary:
     runs-on: ubuntu-latest
