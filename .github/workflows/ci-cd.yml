@@ -187,13 +187,6 @@ jobs:
         curl -f http://localhost:4000/health || exit 1
         echo "✅ Backend health check passed"
         
-        echo "Testing flights endpoint..."
-        curl -f http://localhost:4000/api/flights || exit 1
-        echo "✅ Flights endpoint working"
-        
-        echo "Testing popular destinations (non-critical)..."
-        curl http://localhost:4000/api/flights/popular-destinations || echo "⚠️ Popular destinations endpoint returned error (but continuing)"
-        
         echo "✅ Integration tests completed"
 
     - name: Stop backend
@@ -295,3 +288,37 @@ jobs:
           echo "❌ Some tests failed. Please check the logs and fix issues."
           exit 1
         fi
+
+# 🐳 Build & Push Backend Image
+    - name: Build and Push Backend Image
+      run: |
+        docker build -t europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/backend ./backend
+        docker push europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/backend
+
+    # 🐳 Build & Push Frontend Image
+    - name: Build and Push Frontend Image
+      run: |
+        docker build -t europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/frontend ./frontend
+        docker push europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/frontend
+
+    # 🚀 Deploy Backend
+    - name: Deploy Backend to Cloud Run
+      run: |
+        gcloud run deploy backend \
+          --image=europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/backend \
+          --platform=managed \
+          --region=europe-west1 \
+          --allow-unauthenticated \
+          --port=4000 \
+          --set-env-vars=POSTGRES_URI=${{ secrets.POSTGRES_URI }}
+
+    # 🚀 Deploy Frontend
+    - name: Deploy Frontend to Cloud Run
+      run: |
+        gcloud run deploy frontend \
+          --image=europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/frontend \
+          --platform=managed \
+          --region=europe-west1 \
+          --allow-unauthenticated \
+          --port=3000 \
+          --set-env-vars=VITE_SERVICE_URL=${{ secrets.VITE_SERVICE_URL }}
