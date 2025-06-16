@@ -271,7 +271,7 @@ jobs:
             --platform=managed \
             --region=europe-west1 \
             --allow-unauthenticated \
-            --port=4000 \
+            --port=3000 \
             --set-env-vars=POSTGRES_URI=${{ secrets.POSTGRES_URI }}
 
       # 🚀 Deploy Frontend
@@ -282,7 +282,7 @@ jobs:
             --platform=managed \
             --region=europe-west1 \
             --allow-unauthenticated \
-            --port=3000 \
+            --port=4000 \
             --set-env-vars=VITE_SERVICE_URL=${{ secrets.VITE_SERVICE_URL }}
 
   # Pipeline Summary
@@ -300,7 +300,7 @@ jobs:
         echo "Frontend Tests: ${{ needs.test-frontend.result }}"
         echo "Integration Tests: ${{ needs.integration-tests.result }}"
         echo "Security Scan: ${{ needs.security-scan.result }}"
-        echo "Build Images: ${{ needs.build-images.result }}"
+        echo "Build & Deploy Images: ${{ needs.build-and-deploy.result }}"
         echo ""
         if [ "${{ needs.test-backend.result }}" == "success" ] && [ "${{ needs.test-frontend.result }}" == "success" ] && [ "${{ needs.integration-tests.result }}" == "success" ]; then
           echo "✅ All tests passed! Your code is ready to deploy."
