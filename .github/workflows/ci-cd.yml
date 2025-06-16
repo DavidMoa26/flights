@@ -266,7 +266,7 @@ jobs:
       # 🐳 Build & Push Database Seeder Image
       - name: Build and Push Database Seeder Image
         run: |
-          docker build -t europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/db-seeder ./backend/src/data-access/seed.js
+          docker build -t europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/db-seeder ./backend/src/data-access
           docker push europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/db-seeder
 
       # 🚀 Deploy Backend
@@ -289,6 +289,11 @@ jobs:
             --set-env-vars=POSTGRES_URI=${{ secrets.POSTGRES_URI }} \
             --platform=managed \
             --allow-unauthenticated
+      
+      # 🏗️ Execute Database Seeder Job
+      - name: Execute Database Seeder Job
+        run: |
+          gcloud run jobs execute db-seeder --region=europe-west1
 
       # 🚀 Deploy Frontend
       - name: Deploy Frontend to Cloud Run
