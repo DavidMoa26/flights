@@ -2,19 +2,21 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ development, main ]
+    branches:
+      - development
+      - main
+      - production
   pull_request:
-    branches: [ development, main ]
+    branches:
+      - development
+      - main
 
 env:
-  NODE_VERSION: '18'
+  NODE_VERSION: "18"
 
 jobs:
-  # Test Backend
   test-backend:
     runs-on: ubuntu-latest
-
-    # Set up PostgreSQL service for testing
     services:
       postgres:
         image: postgres:15-alpine
@@ -32,100 +34,77 @@ jobs:
           - 5432:5432
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
-        cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+        working-directory: ./backend
 
-    - name: Install backend dependencies
-      working-directory: ./backend
-      run: npm ci
+      - run: npm run lint
+        working-directory: ./backend
+        continue-on-error: true
 
-    - name: Run backend linting
-      working-directory: ./backend
-      run: npm run lint
-      continue-on-error: true
+      - run: |
+          until pg_isready -h localhost -p 5432 -U test_user; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+          echo "PostgreSQL is ready!"
 
-    - name: Wait for PostgreSQL
-      run: |
-        until pg_isready -h localhost -p 5432 -U test_user; do
-          echo "Waiting for PostgreSQL..."
-          sleep 2
-        done
-        echo "PostgreSQL is ready!"
+      - run: |
+          cat > .env.test << EOF
+          NODE_ENV=test
+          POSTGRES_URI=postgresql://test_user:test_password@localhost:5432/flights_test_db?sslmode=disable
+          DB_HOST=localhost
+          DB_PORT=5432
+          DB_NAME=flights_test_db
+          DB_USER=test_user
+          DB_PASSWORD=test_password
+          EOF
+        working-directory: ./backend
 
-    - name: Setup test environment
-      working-directory: ./backend
-      run: |
-        # Create test environment file
-        cat > .env.test << EOF
-        NODE_ENV=test
-        POSTGRES_URI=postgresql://test_user:test_password@localhost:5432/flights_test_db?sslmode=disable
-        DB_HOST=localhost
-        DB_PORT=5432
-        DB_NAME=flights_test_db
-        DB_USER=test_user
-        DB_PASSWORD=test_password
-        EOF
-        
-        echo "✅ Test environment configured"
+      - run: npm test
+        working-directory: ./backend
+        env:
+          NODE_ENV: test
 
-    - name: Run backend tests
-      working-directory: ./backend
-      run: npm test
-      env:
-        NODE_ENV: test
-
-  # Test Frontend
   test-frontend:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+        working-directory: ./frontend
 
-    - name: Install frontend dependencies
-      working-directory: ./frontend
-      run: npm ci
+      - run: npm run lint
+        working-directory: ./frontend
+        continue-on-error: true
 
-    - name: Run frontend linting
-      working-directory: ./frontend
-      run: npm run lint
-      continue-on-error: true
+      - run: npm test
+        working-directory: ./frontend
 
-    - name: Run frontend tests
-      working-directory: ./frontend
-      run: npm test
+      - run: npm run build
+        working-directory: ./frontend
+        env:
+          VITE_SERVICE_URL: http://localhost:4000
 
-    - name: Build frontend
-      working-directory: ./frontend
-      run: npm run build
-      env:
-        VITE_SERVICE_URL: http://localhost:4000
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/dist
 
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: frontend-build
-        path: frontend/dist
-
-  # Integration Tests
   integration-tests:
     runs-on: ubuntu-latest
     needs: [test-backend, test-frontend]
-
     services:
       postgres:
         image: postgres:15-alpine
@@ -143,129 +122,94 @@ jobs:
           - 5432:5432
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ env.NODE_VERSION }}
+      - run: |
+          cd backend && npm ci
+          cd ../frontend && npm ci
 
-    - name: Install dependencies
-      run: |
-        cd backend && npm ci
-        cd ../frontend && npm ci
+      - run: |
+          until pg_isready -h localhost -p 5432 -U integration_user; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
 
-    - name: Wait for PostgreSQL
-      run: |
-        until pg_isready -h localhost -p 5432 -U integration_user; do
-          echo "Waiting for PostgreSQL..."
-          sleep 2
-        done
+      - run: |
+          npm start &
+          echo $! > backend.pid
+          sleep 20
+          curl http://localhost:4000/health || exit 1
+        working-directory: ./backend
+        env:
+          NODE_ENV: development
+          PORT: 4000
+          POSTGRES_URI: postgresql://integration_user:integration_password@localhost:5432/flights_integration_db?sslmode=disable
+          RUN_SEED: true
 
-    - name: Start backend
-      working-directory: ./backend
-      run: |
-        npm start &
-        echo $! > backend.pid
-        sleep 20
-        echo "Backend started, checking if it's responding..."
-        curl http://localhost:4000/health || {
-          echo "Backend not responding, checking if it's still running..."
-          ps aux | grep node
-          exit 1
-        }
-      env:
-        NODE_ENV: development
-        PORT: 4000
-        POSTGRES_URI: postgresql://integration_user:integration_password@localhost:5432/flights_integration_db?sslmode=disable
-        RUN_SEED: true
+      - run: curl -f http://localhost:4000/health
 
-    - name: Run integration tests
-      run: |
-        echo "Testing backend health..."
-        curl -f http://localhost:4000/health || exit 1
-        echo "✅ Backend health check passed"
-        
-        echo "✅ Integration tests completed"
+      - if: always()
+        run: |
+          if [ -f backend/backend.pid ]; then
+            kill $(cat backend/backend.pid) || true
+          fi
 
-    - name: Stop backend
-      if: always()
-      run: |
-        if [ -f backend/backend.pid ]; then
-          kill $(cat backend/backend.pid) || true
-        fi
-
-  # Security Scan
   security-scan:
     runs-on: ubuntu-latest
     needs: [test-backend, test-frontend]
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ env.NODE_VERSION }}
+      - run: npm ci
+        working-directory: ./backend
 
-    - name: Install backend dependencies
-      working-directory: ./backend
-      run: npm ci
+      - run: npm ci
+        working-directory: ./frontend
 
-    - name: Install frontend dependencies
-      working-directory: ./frontend
-      run: npm ci
+      - run: npm audit --audit-level moderate
+        working-directory: ./backend
+        continue-on-error: true
 
-    - name: Run security audit for backend
-      working-directory: ./backend
-      run: npm audit --audit-level moderate
-      continue-on-error: true
+      - run: npm audit --audit-level moderate
+        working-directory: ./frontend
+        continue-on-error: true
 
-    - name: Run security audit for frontend
-      working-directory: ./frontend
-      run: npm audit --audit-level moderate
-      continue-on-error: true
-  
   build-and-deploy:
+    if: github.ref == 'refs/heads/production'
     runs-on: ubuntu-latest
     needs: [test-backend, test-frontend]
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
         with:
           credentials_json: "${{ secrets.GCP_SA_KEY }}"
 
-      - name: Set up Google Cloud CLI
-        uses: google-github-actions/setup-gcloud@v1
+      - uses: google-github-actions/setup-gcloud@v1
         with:
           project_id: devops-project-463018
 
-      - name: Enable Cloud Run API
-        run: gcloud services enable run.googleapis.com
+      - run: gcloud services enable run.googleapis.com
 
-      - name: Configure Docker for Artifact Registry
-        run: gcloud auth configure-docker europe-west1-docker.pkg.dev
+      - run: gcloud auth configure-docker europe-west1-docker.pkg.dev
 
-      # 🐳 Build & Push Backend Image
-      - name: Build and Push Backend Image
-        run: |
+      - run: |
           docker build -t europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/backend ./backend
           docker push europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/backend
 
-      # 🐳 Build & Push Frontend Image
-      - name: Build and Push Frontend Image
-        run: |
+      - run: |
           docker build -t europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/frontend ./frontend
           docker push europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/frontend
 
-      # 🚀 Deploy Backend
-      - name: Deploy Backend to Cloud Run
-        run: |
+      - run: |
           gcloud run deploy backend \
             --image=europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/backend \
             --platform=managed \
@@ -274,9 +218,7 @@ jobs:
             --port=4000 \
             --set-env-vars=POSTGRES_URI=${{ secrets.POSTGRES_URI }}
 
-      # 🚀 Deploy Frontend
-      - name: Deploy Frontend to Cloud Run
-        run: |
+      - run: |
           gcloud run deploy frontend \
             --image=europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/frontend \
             --platform=managed \
@@ -285,27 +227,23 @@ jobs:
             --port=3000 \
             --set-env-vars=VITE_SERVICE_URL=${{ secrets.VITE_SERVICE_URL }}
 
-  # Pipeline Summary
   pipeline-summary:
     runs-on: ubuntu-latest
     needs: [test-backend, test-frontend, integration-tests, security-scan]
     if: always()
 
     steps:
-    - name: Pipeline summary
-      run: |
-        echo "📊 CI/CD Pipeline Summary"
-        echo "========================="
-        echo "Backend Tests: ${{ needs.test-backend.result }}"
-        echo "Frontend Tests: ${{ needs.test-frontend.result }}"
-        echo "Integration Tests: ${{ needs.integration-tests.result }}"
-        echo "Security Scan: ${{ needs.security-scan.result }}"
-        echo "Build & Deploy Images: ${{ needs.build-and-deploy.result }}"
-        echo ""
-        if [ "${{ needs.test-backend.result }}" == "success" ] && [ "${{ needs.test-frontend.result }}" == "success" ] && [ "${{ needs.integration-tests.result }}" == "success" ]; then
-          echo "✅ All tests passed! Your code is ready to deploy."
-        else
-          echo "❌ Some tests failed. Please check the logs and fix issues."
-          exit 1
-        fi
-
+      - run: |
+          echo "📊 CI/CD Pipeline Summary"
+          echo "========================="
+          echo "Backend Tests: ${{ needs.test-backend.result }}"
+          echo "Frontend Tests: ${{ needs.test-frontend.result }}"
+          echo "Integration Tests: ${{ needs.integration-tests.result }}"
+          echo "Security Scan: ${{ needs.security-scan.result }}"
+          echo ""
+          if [ "${{ needs.test-backend.result }}" == "success" ] && [ "${{ needs.test-frontend.result }}" == "success" ] && [ "${{ needs.integration-tests.result }}" == "success" ]; then
+            echo "✅ All tests passed! Ready to deploy."
+          else
+            echo "❌ Some tests failed. Check logs."
+            exit 1
+          fi
