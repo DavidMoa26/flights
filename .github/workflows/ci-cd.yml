@@ -233,7 +233,7 @@ jobs:
             --region=europe-west1 \
             --allow-unauthenticated \
             --port=4000 \
-            --set-env-vars=POSTGRES_URI=postgresql://admin:secret@postgres:443/flights_db
+            --set-env-vars=https://postgres-db-3nte5cnxtq-ew.a.run.app
 
       - run: |
           gcloud run deploy frontend \
