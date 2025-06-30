@@ -1,19 +1,17 @@
+version: "3.8"
+
 services:
-  # PostgreSQL Database
   database:
     image: postgres:15-alpine
-    container_name: flight_booking_db
     restart: unless-stopped
-    ports:
-      - '5432:5432'
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_HOST_AUTH_METHOD=trust
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./backend/init-db:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
@@ -22,94 +20,39 @@ services:
     networks:
       - app-network
 
-  # Database Seeder (runs once)
-  db-seed:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-      no_cache: true
-    container_name: flight_booking_db_seed
-    environment:
-      - NODE_ENV=development
-      - POSTGRES_URI=${POSTGRES_URI}
-      - DB_HOST=database
-      - DB_PORT=5432
-      - DB_NAME=${POSTGRES_DB}
-      - DB_USER=${POSTGRES_USER}
-      - DB_PASSWORD=${POSTGRES_PASSWORD}
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
-    depends_on:
-      database:
-        condition: service_healthy
-    command: ["sh", "-c", "sleep 5 && node src/data-access/seed.js"]
-    networks:
-      - app-network
-    restart: "no"
-
-  # Backend Service
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-      no_cache: true
-    container_name: flight_booking_backend
     restart: unless-stopped
     ports:
-      - '4000:4000'
+      - "4000:4000"
     environment:
-      - NODE_ENV=development
-      - PORT=4000
-      - POSTGRES_URI=${POSTGRES_URI}
-      - DB_HOST=database
-      - DB_PORT=5432
-      - DB_NAME=${POSTGRES_DB}
-      - DB_USER=${POSTGRES_USER}
-      - DB_PASSWORD=${POSTGRES_PASSWORD}
-      - CHOKIDAR_USEPOLLING=true
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
+      - NODE_ENV=production
+      - POSTGRES_URI=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}
     depends_on:
       database:
         condition: service_healthy
     networks:
       - app-network
-    stdin_open: true
-    tty: true
 
-  # Frontend Service
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      no_cache: true
-    container_name: flight_booking_frontend
     restart: unless-stopped
     ports:
-      - '3000:3000'
+      - "3000:3000"
     environment:
       - VITE_SERVICE_URL=http://localhost:4000
-      - CHOKIDAR_USEPOLLING=true
-      - WATCHPACK_POLLING=true
     depends_on:
       - backend
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-      - /app/dist
     networks:
       - app-network
-    stdin_open: true
-    tty: true
 
-# Define volumes for data persistence
 volumes:
   postgres_data:
-    driver: local
 
-# Define networks
 networks:
   app-network:
     driver: bridge
