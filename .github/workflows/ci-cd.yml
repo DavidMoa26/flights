@@ -220,8 +220,11 @@ jobs:
             --platform=managed \
             --region=europe-west1 \
             --port=5432 \
-            --no-allow-unauthenticated \
+            --allow-unauthenticated \
             --set-env-vars=POSTGRES_DB=flights_db,POSTGRES_USER=admin,POSTGRES_PASSWORD=secret
+
+      - id: get-postgres-url
+        run: echo "POSTGRES_URL=$(gcloud run services describe postgres-db --platform=managed --region=europe-west1 --format='value(status.url)')"
 
       - run: |
           gcloud run deploy backend \

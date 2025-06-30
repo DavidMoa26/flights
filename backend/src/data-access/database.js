@@ -11,12 +11,12 @@ export const sequelize = new Sequelize(process.env.POSTGRES_URI, {
   dialect: 'postgres',
   logging: false, // Disable logging for production
   dialectOptions: {
-    ssl: false,
+    ssl: false
     // ssl: {
     //  require: true,
     //  rejectUnauthorized: false, // Allow self-signed certificates
     //} 
-  },
+  }
 });
 
 export async function initDb() {
