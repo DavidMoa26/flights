@@ -7,7 +7,7 @@ export default defineConfig({
 
   // Development server configuration
   server: {
-    allowedHosts: ["flights-frontend-231388793622.europe-west1.run.app"],
+    allowedHosts: ["frontend-231388793622.europe-west1.run.app"],
     port: 3000,
     host: true, // Allow access from other machines
     watch: {
