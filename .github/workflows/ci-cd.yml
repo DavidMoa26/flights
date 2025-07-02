@@ -186,7 +186,7 @@ jobs:
             --region=europe-west1 \
             --allow-unauthenticated \
             --port=4000 \
-            --set-env-vars=POSTGRES_URI=""
+            --set-env-vars="POSTGRES_URI=postgresql://admin:secret@postgres-db-3nte5cnxtq-ew.a.run.app:5432/flights_db"
       - run: |
           gcloud run deploy frontend \
             --image=europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/frontend \
