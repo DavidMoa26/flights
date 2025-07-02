@@ -1,13 +1,13 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
- 
+
   // Development server configuration
   server: {
-    allowedHosts: ["frontend-231388793622.europe-west1.run.app"],
+    allowedHosts: ["flights-frontend-231388793622.europe-west1.run.app"],
     port: 3000,
     host: true, // Allow access from other machines
     watch: {
@@ -19,56 +19,52 @@ export default defineConfig({
     },
     proxy: {
       // Proxy API requests to backend during development
-      '/api': {
-        target: 'http://localhost:4000',
+      "/api": {
+        target: "http://localhost:4000",
         changeOrigin: true,
         secure: false,
-      }
-    }
+      },
+    },
   },
-  
+
   // Build configuration
   build: {
-    outDir: 'dist',
+    outDir: "dist",
     sourcemap: true,
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom'],
-          api: ['axios']
-        }
-      }
-    }
+          vendor: ["react", "react-dom"],
+          api: ["axios"],
+        },
+      },
+    },
   },
-  
+
   // Test configuration
   test: {
     globals: true,
-    environment: 'jsdom',
-    setupFiles: ['./src/tests/setup.js'],
+    environment: "jsdom",
+    setupFiles: ["./src/tests/setup.js"],
     css: true,
-    reporters: ['verbose'],
+    reporters: ["verbose"],
     coverage: {
-      reporter: ['text', 'json', 'html'],
-      exclude: [
-        'node_modules/',
-        'src/tests/',
-        'src/main.jsx'
-      ]
-    }
+      reporter: ["text", "json", "html"],
+      exclude: ["node_modules/", "src/tests/", "src/main.jsx"],
+    },
   },
-  
+
   // Environment variables prefix
-  envPrefix: 'VITE_',
-  
+  envPrefix: "VITE_",
+
   // CSS configuration
   css: {
-    devSourcemap: true
+    devSourcemap: true,
   },
-  
+
   // Preview server (for testing built app)
   preview: {
     port: 3000,
-    host: true
-  }
+    host: true,
+  },
 });

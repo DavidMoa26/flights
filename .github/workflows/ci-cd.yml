@@ -201,13 +201,16 @@ jobs:
 
       - run: gcloud auth configure-docker europe-west1-docker.pkg.dev
 
+      # ✅ Build & push backend
       - run: |
           docker build -t europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/backend ./backend
           docker push europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/backend
 
+      # ✅ Build & push frontend with VITE_SERVICE_URL injected
       - run: |
-          docker build -t europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/frontend ./frontend
+          VITE_SERVICE_URL=${{ secrets.VITE_SERVICE_URL }} docker build -t europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/frontend ./frontend
           docker push europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/frontend
+<<<<<<< HEAD
       
       - run: |
           docker pull postgres:15-alpine
@@ -225,7 +228,11 @@ jobs:
 
       - id: get-postgres-url
         run: echo "POSTGRES_URL=$(gcloud run services describe postgres-db --platform=managed --region=europe-west1 --format='value(status.url)')"
+=======
+        shell: bash
+>>>>>>> 5e9ec20 (update ci-cd & deploy)
 
+      # ✅ Deploy backend
       - run: |
           gcloud run deploy backend \
             --image=europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/backend \
@@ -235,6 +242,7 @@ jobs:
             --port=4000 \
             --set-env-vars="POSTGRES_URI=postgresql://admin:secret@postgres-db-3nte5cnxtq-ew.a.run.app:5432/flights_db"
 
+      # ✅ Deploy frontend
       - run: |
           gcloud run deploy frontend \
             --image=europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/frontend \

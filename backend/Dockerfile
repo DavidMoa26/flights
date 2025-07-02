@@ -8,8 +8,6 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install
 
-# Install nodemon globally for development
-RUN npm install -g nodemon
 
 # Copy source code
 COPY . .
@@ -18,4 +16,4 @@ COPY . .
 EXPOSE 4000
 
 # Start with nodemon for hot reload
-CMD ["nodemon", "src/index.js"]
+CMD ["node", "src/index.js"]
