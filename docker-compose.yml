@@ -2,7 +2,7 @@ services:
   # PostgreSQL Database
   database:
     image: postgres:15-alpine
-    container_name: flight_booking_db
+    container_name: flights_db
     restart: unless-stopped
     ports:
       - "5432:5432"
@@ -28,7 +28,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
       no_cache: true
-    container_name: flight_booking_db_seed
+    container_name: flights_db_seed
     environment:
       - NODE_ENV=development
       - POSTGRES_URI=${POSTGRES_URI}
