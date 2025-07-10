@@ -81,7 +81,7 @@ Automated via **GitHub Actions** (`.github/workflows/ci-cd.yml`):
 ### Deployment Steps
 
 1. **Local Development**:
-   - Run `./setup` or `docker-compose up -d` to start all services locally.
+   - Run `./local_setup` or `docker-compose up -d` to start all services locally.
    - Access frontend at [http://localhost:3000](http://localhost:3000/), backend at [http://localhost:4000](http://localhost:4000/).
 2. **CI/CD Pipeline**:
    - On push to `production`, the pipeline builds and pushes Docker images to Google Artifact Registry.
