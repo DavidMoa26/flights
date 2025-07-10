@@ -184,11 +184,7 @@ npm test
 
 - Use the provided setup script:
   ```bash
-  ./setup
-  ```
-- Or use the cleanup/reset script:
-  ```bash
-  ./clean-n-setup.sh
+  ./local_setup
   ```
 
 #### Production Deployment (CI/CD)
