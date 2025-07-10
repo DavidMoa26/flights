@@ -7,7 +7,7 @@ Docker desktop/CLI required
 Backend + Frontend + PostgreSQL containers and Seeder with one command
 
 ```bash
-./setup
+./local_setup.sh
 ```
 
 ## Usage
