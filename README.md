@@ -33,7 +33,6 @@ flights/
       services/         # API service abstraction
       tests/            # Vitest/RTL tests
     Dockerfile          # Frontend Docker image
-    nginx.conf          # Nginx config for static hosting (optional)
   docker-compose.yml    # Multi-container orchestration (DB, backend, frontend)
   .github/workflows/    # CI/CD GitHub Actions workflows
 ```
