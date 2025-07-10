@@ -106,7 +106,7 @@ Docker desktop/CLI required
 Backend + Frontend + PostgreSQL containers and Seeder with one command
 
 ```bash
-./setup
+./local_setup
 ```
 
 ---
@@ -133,7 +133,7 @@ After successful installation of the script use the following Local URLs to:
 
 1. **Start all services:**
    ```bash
-   ./setup
+   ./local_setup
    # or
    docker-compose up -d
    ```
@@ -177,15 +177,6 @@ npm test
 ```
 
 - Runs Vitest and React Testing Library tests.
-
-### Running Deployment Scripts
-
-#### Local Docker Deployment
-
-- Use the provided setup script:
-  ```bash
-  ./local_setup
-  ```
 
 #### Production Deployment (CI/CD)
 
