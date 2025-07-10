@@ -145,43 +145,6 @@ jobs:
         working-directory: ./frontend
         continue-on-error: true
 
-  build-and-deploy:
-    if: github.ref == 'refs/heads/production'
-    runs-on: ubuntu-latest
-    needs: [test-backend, test-frontend]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: google-github-actions/auth@v2
-        with:
-          credentials_json: "${{ secrets.GCP_SA_KEY }}"
-      - uses: google-github-actions/setup-gcloud@v1
-        with:
-          project_id: devops-project-463018
-      - run: gcloud services enable run.googleapis.com
-      - run: gcloud auth configure-docker europe-west1-docker.pkg.dev
-      - run: |
-          docker build -t europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/backend ./backend
-          docker push europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/backend
-      - run: |
-          VITE_SERVICE_URL=${{ secrets.VITE_SERVICE_URL }} docker build -t europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/frontend ./frontend
-          docker push europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/frontend
-      - run: |
-          gcloud run deploy backend \
-            --image=europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/backend \
-            --platform=managed \
-            --region=europe-west1 \
-            --allow-unauthenticated \
-            --port=4000 \
-            --set-env-vars=POSTGRES_URI=${{ secrets.POSTGRES_URI }}
-      - run: |
-          gcloud run deploy frontend \
-            --image=europe-west1-docker.pkg.dev/devops-project-463018/flight-app-repo/frontend \
-            --platform=managed \
-            --region=europe-west1 \
-            --allow-unauthenticated \
-            --port=3000 \
-            --set-env-vars=VITE_SERVICE_URL=${{ secrets.VITE_SERVICE_URL }}
-
   pipeline-summary:
     runs-on: ubuntu-latest
     needs: [test-backend, test-frontend, integration-tests, security-scan]
